@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id               String    @id @default(uuid())
+  name             String
+  role             String    @default("USER")
+  email            String    @unique
+  phone            String?
+  active           Boolean?  @default(true)
+  username         String    @unique
+  password         String
+  description      String?
+  first_access     Boolean?  @default(true)
+  token            String?
+  expires_in_token DateTime?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  permissions UsersOnPermissions[]
+
+  @@map("users")
+}
+
+model UsersOnPermissions {
+  users_id String
+  users    Users  @relation(fields: [users_id], references: [id], onDelete: Cascade)
+
+  permission_id String
+  permissions   Permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+
+  @@id([users_id, permission_id])
+  @@map("users_permissions")
+}
+
+model Permissions {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+
+  users UsersOnPermissions[]
+
+  @@map("permissions")
+}
